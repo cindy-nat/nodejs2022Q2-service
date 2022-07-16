@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UserController, UserService } from './user';
 import { ArtistController, ArtistService } from './Artist';
 import { AlbumController, AlbumService } from './Album';
+import { TrackController, TrackService } from './Track';
 
 @Module({
   imports: [],
@@ -12,7 +13,14 @@ import { AlbumController, AlbumService } from './Album';
     UserController,
     ArtistController,
     AlbumController,
+    TrackController,
   ],
-  providers: [AppService, UserService, ArtistService, AlbumService],
+  providers: [
+    AppService,
+    UserService,
+    ArtistService,
+    AlbumService,
+    TrackService,
+  ],
 })
 export class AppModule {}
