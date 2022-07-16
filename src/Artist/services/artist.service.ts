@@ -66,6 +66,11 @@ export class ArtistService {
     const deleted = Boolean(await this.findOne(id));
 
     data.artists = data.artists.filter((artist) => artist.id !== id);
+    const albumIndex = data.albums.findIndex((album) => album.artistId === id);
+
+    if (albumIndex >= 0) {
+      data.albums[albumIndex].artistId = null;
+    }
 
     return { deleted };
   }
