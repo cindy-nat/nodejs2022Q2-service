@@ -11,10 +11,9 @@ import {
 } from '@nestjs/common';
 import { ArtistService } from '../services/artist.service';
 import { Artist } from '../schemas/artist.schema';
-import {CreateUserDto, UpdateUserDto, User} from "../../user";
-import {CreateArtistDto} from "../dto/create-artist.dto";
-import {UpdateArtistDto} from "../dto/update-artist.dto";
-import {DeleteType} from "../../general.schema";
+import { CreateArtistDto } from '../dto/create-artist.dto';
+import { UpdateArtistDto } from '../dto/update-artist.dto';
+import { DeleteType } from '../../general.schema';
 
 @Controller('artist')
 export class ArtistController {

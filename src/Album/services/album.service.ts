@@ -1,12 +1,14 @@
-import {BadRequestException, Injectable, NotFoundException} from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AlbumSchema } from '../schemas/album.schema';
 import { data } from '../../data';
-import {v4 as uuidv4, validate} from "uuid";
-import {CreateAlbumDto} from "../dto/create-album.dto";
-import {UpdateArtistDto} from "../../Artist/dto/update-artist.dto";
-import {Artist} from "../../Artist";
-import {UpdateAlbumDto} from "../dto/update-album.dto";
-import {DeleteType} from "../../general.schema";
+import { v4 as uuidv4, validate } from 'uuid';
+import { CreateAlbumDto } from '../dto/create-album.dto';
+import { UpdateAlbumDto } from '../dto/update-album.dto';
+import { DeleteType } from '../../general.schema';
 
 @Injectable()
 export class AlbumService {
