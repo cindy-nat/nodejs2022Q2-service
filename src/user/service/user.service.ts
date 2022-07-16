@@ -40,14 +40,6 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    if (
-      !(
-        typeof createUserDto.password === 'string' &&
-        typeof createUserDto.login === 'string'
-      )
-    ) {
-      throw new BadRequestException();
-    }
     const user = {
       login: createUserDto.login,
       password: createUserDto.password,
@@ -64,14 +56,7 @@ export class UserService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<Omit<User, 'password'>> {
-    if (
-      !(
-        typeof updateUserDto.newPassword === 'string' &&
-        typeof updateUserDto.oldPassword === 'string' &&
-        typeof id === 'string' &&
-        validate(id)
-      )
-    ) {
+    if (!validate(id)) {
       throw new BadRequestException();
     }
     const user = data.users.find((user) => user.id === id);
