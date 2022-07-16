@@ -1,5 +1,7 @@
-import { User } from './user/schemas/user.schema';
+import { User } from './user';
+import { Artist } from './Artist';
 
-export const data: { users: User[] } = {
+export const data: { users: User[]; artists: Artist[] } = {
   users: [],
+  artists: [],
 };
