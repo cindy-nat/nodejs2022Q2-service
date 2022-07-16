@@ -2,7 +2,7 @@ import { User } from './user';
 import { Artist } from './Artist';
 import { AlbumSchema } from './Album';
 import { TrackSchema } from './Track';
-import { FavouriteSchema } from "./Favourite";
+import { FavouriteSchema } from './Favourite';
 
 export const data: {
   users: User[];

@@ -1,15 +1,16 @@
 import {
   BadRequestException,
-  Injectable, NotFoundException,
-  UnprocessableEntityException
-} from "@nestjs/common";
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { FavouriteSchema } from '../schemas/favourite.schema';
 import { data } from '../../data';
 import { TrackSchema } from '../../Track';
 import { validate } from 'uuid';
 import { AlbumSchema } from '../../Album';
 import { Artist } from '../../Artist';
-import { DeleteType } from "../../general.schema";
+import { DeleteType } from '../../general.schema';
 
 @Injectable()
 export class FavouriteService {
@@ -126,7 +127,9 @@ export class FavouriteService {
       throw new BadRequestException();
     }
 
-    const favArtist = data.favourites.artists.find((artistId) => artistId === id);
+    const favArtist = data.favourites.artists.find(
+      (artistId) => artistId === id,
+    );
 
     if (!favArtist) {
       throw new NotFoundException();

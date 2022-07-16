@@ -1,10 +1,18 @@
-import { Controller, Delete, Get, Header, HttpCode, Param, Post } from "@nestjs/common";
+import {
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { FavouriteService } from '../services/favourite.service';
 import { FavouriteSchema } from '../schemas/favourite.schema';
-import { TrackSchema } from "../../Track";
-import { DeleteType } from "../../general.schema";
-import { AlbumSchema } from "../../Album";
-import { Artist } from "../../Artist";
+import { TrackSchema } from '../../Track';
+import { DeleteType } from '../../general.schema';
+import { AlbumSchema } from '../../Album';
+import { Artist } from '../../Artist';
 
 @Controller('favs')
 export class FavouriteController {
