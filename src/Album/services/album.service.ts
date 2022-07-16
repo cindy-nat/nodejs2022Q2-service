@@ -83,6 +83,9 @@ export class AlbumService {
     }
 
     data.albums = data.albums.filter((album) => album.id !== id);
+    data.favourites.albums = data.favourites.albums.filter(
+      (favAlbum) => favAlbum !== id,
+    );
 
     return { deleted };
   }

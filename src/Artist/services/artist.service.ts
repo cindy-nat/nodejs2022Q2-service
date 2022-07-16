@@ -76,6 +76,10 @@ export class ArtistService {
       data.tracks[trackIndex].artistId = null;
     }
 
+    data.favourites.artists = data.favourites.artists.filter(
+      (favArtist) => favArtist !== id,
+    );
+
     return { deleted };
   }
 }

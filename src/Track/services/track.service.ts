@@ -89,6 +89,10 @@ export class TrackService {
 
     data.tracks = data.tracks.filter((track) => track.id !== id);
 
+    data.favourites.tracks = data.favourites.tracks.filter(
+      (favTrack) => favTrack !== id,
+    );
+
     return { deleted };
   }
 }
