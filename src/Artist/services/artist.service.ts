@@ -1,26 +1,44 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { data } from '../../data';
 import { Artist } from '../schemas/artist.schema';
-import { v4 as uuidv4, validate } from 'uuid';
+import { validate } from 'uuid';
 import { CreateArtistDto } from '../dto/create-artist.dto';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
 import { DeleteType } from '../../general.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ArtistEntity } from '../entity/artist.entity';
+import { AlbumService } from '../../Album';
+import { TrackService } from '../../Track';
+import { FavouriteService } from '../../Favourite';
 
 @Injectable()
 export class ArtistService {
-  async findAll(): Promise<Artist[]> {
-    return data.artists;
+  constructor(
+    @InjectRepository(ArtistEntity)
+    private artistRepository: Repository<ArtistEntity>,
+    @Inject(forwardRef(() => AlbumService))
+    private albumService: AlbumService,
+    @Inject(forwardRef(() => TrackService))
+    private trackService: TrackService,
+    @Inject(forwardRef(() => FavouriteService))
+    private favouriteService: FavouriteService,
+  ) {}
+
+  async findAll(): Promise<ArtistEntity[]> {
+    return this.artistRepository.find();
   }
 
-  async findOne(id: string): Promise<Artist> {
+  async findOne(id: string): Promise<ArtistEntity> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const artist = data.artists.find((user) => user.id === id);
+    const artist = this.artistRepository.findOneBy({ id: id });
     if (!artist) {
       throw new NotFoundException();
     }
@@ -28,13 +46,10 @@ export class ArtistService {
   }
 
   async create(createArtistDto: CreateArtistDto): Promise<Artist> {
-    const artist = {
+    return this.artistRepository.create({
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
-      id: uuidv4(),
-    };
-    data.artists.push(artist);
-    return artist;
+    });
   }
 
   async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
@@ -42,44 +57,40 @@ export class ArtistService {
       throw new BadRequestException();
     }
 
-    const artist = data.artists.find((artist) => artist.id === id);
+    const artist = await this.findOne(id);
 
-    if (!artist) {
-      throw new NotFoundException();
-    }
-
-    const artistIndex = data.artists.findIndex((artist) => artist.id === id);
-
-    data.artists[artistIndex].name = updateArtistDto.name || artist.name;
-    data.artists[artistIndex].grammy =
+    artist.name = updateArtistDto.name || artist.name;
+    artist.grammy =
       typeof updateArtistDto.grammy === 'boolean'
         ? updateArtistDto.grammy
         : artist.grammy;
 
-    return this.findOne(id);
+    return artist;
   }
 
   async delete(id: string): Promise<DeleteType> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const deleted = Boolean(await this.findOne(id));
+    const artist = await this.findOne(id);
+    //
+    // const albumIndex = this.albumService.findOneByArtistId(artist.id)
+    // const trackIndex = data.tracks.findIndex((track) => track.artistId === id);
 
-    data.artists = data.artists.filter((artist) => artist.id !== id);
-    const albumIndex = data.albums.findIndex((album) => album.artistId === id);
-    const trackIndex = data.tracks.findIndex((track) => track.artistId === id);
+    // if (albumIndex >= 0) {
+    //   data.albums[albumIndex].artistId = null;
+    // }
+    // if (trackIndex >= 0) {
+    //   data.tracks[trackIndex].artistId = null;
+    // }
 
-    if (albumIndex >= 0) {
-      data.albums[albumIndex].artistId = null;
-    }
-    if (trackIndex >= 0) {
-      data.tracks[trackIndex].artistId = null;
-    }
+    // data.favourites.artists = data.favourites.artists.filter(
+    //   (favArtist) => favArtist !== id,
+    // );
+    await this.favouriteService.deleteArtistFromFav(id);
 
-    data.favourites.artists = data.favourites.artists.filter(
-      (favArtist) => favArtist !== id,
-    );
+    const deleted = await this.artistRepository.remove(artist);
 
-    return { deleted };
+    return { deleted: Boolean(deleted) };
   }
 }
