@@ -73,13 +73,14 @@ export class ArtistService {
       throw new BadRequestException();
     }
     const artist = await this.findOne(id);
-    //
-    // const albumIndex = this.albumService.findOneByArtistId(artist.id)
+
+    const album = await this.albumService.findOneByArtistId(artist.id);
+    if (album) {
+      await this.albumService.update(album.id, { artistId: null });
+    }
+
     // const trackIndex = data.tracks.findIndex((track) => track.artistId === id);
 
-    // if (albumIndex >= 0) {
-    //   data.albums[albumIndex].artistId = null;
-    // }
     // if (trackIndex >= 0) {
     //   data.tracks[trackIndex].artistId = null;
     // }
