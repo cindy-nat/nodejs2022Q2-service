@@ -1,92 +1,103 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { AlbumSchema } from '../schemas/album.schema';
-import { data } from '../../data';
-import { v4 as uuidv4, validate } from 'uuid';
+import { validate } from 'uuid';
 import { CreateAlbumDto } from '../dto/create-album.dto';
 import { UpdateAlbumDto } from '../dto/update-album.dto';
 import { DeleteType } from '../../general.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AlbumEntity } from '../entity/album.entity';
+import { ArtistService } from '../../Artist';
+import { ArtistEntity } from '../../Artist/entity/artist.entity';
+import { FavouriteService } from '../../Favourite';
 
 @Injectable()
 export class AlbumService {
+  constructor(
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
+    @Inject(forwardRef(() => ArtistService))
+    private artistService: ArtistService,
+    @Inject(forwardRef(() => FavouriteService))
+    private favouriteService: FavouriteService,
+  ) {}
+
   async findAll(): Promise<AlbumSchema[]> {
-    return data.albums;
+    return this.albumRepository.find();
   }
 
   async findOne(id): Promise<AlbumSchema> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const album = data.albums.find((album) => album.id === id);
+    const album = this.albumRepository.findOneBy({ id: id });
     if (!album) {
       throw new NotFoundException();
     }
     return album;
   }
 
-  findArtist(id) {
-    return data.artists.find((artist) => id === artist.id);
+  async findOneByArtistId(artistId): Promise<AlbumSchema> {
+    return this.albumRepository.findOneBy({ artistId: artistId });
+  }
+
+  async findArtist(artistId) {
+    return this.artistService.findOne(artistId);
   }
 
   async create(createAlbumDto: CreateAlbumDto): Promise<AlbumSchema> {
     const artist = this.findArtist(createAlbumDto.artistId);
 
-    const album = {
+    return this.albumRepository.create({
       name: createAlbumDto.name,
       year: createAlbumDto.year,
       artistId: artist ? createAlbumDto.artistId : null,
-      id: uuidv4(),
-    };
-    data.albums.push(album);
-    return album;
+    });
   }
 
   async update(
     id: string,
     updateAlbumDto: UpdateAlbumDto,
-  ): Promise<AlbumSchema> {
+  ): Promise<ArtistEntity> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
 
-    const album = data.albums.find((album) => album.id === id);
+    const album = await this.findOne(id);
 
-    if (!album) {
-      throw new NotFoundException();
-    }
-
-    const albumIndex = data.albums.findIndex((artist) => artist.id === id);
     const artist = this.findArtist(updateAlbumDto.artistId);
 
-    data.albums[albumIndex].name = updateAlbumDto.name || album.name;
-    data.albums[albumIndex].year = updateAlbumDto.year || album.year;
-    data.albums[albumIndex].artistId = artist
-      ? updateAlbumDto.artistId
-      : album.artistId;
+    album.name = updateAlbumDto.name || album.name;
+    album.year = updateAlbumDto.year || album.year;
+    album.artistId = artist ? updateAlbumDto.artistId : album.artistId;
 
-    return this.findOne(id);
+    return artist;
   }
 
   async delete(id: string): Promise<DeleteType> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const deleted = Boolean(await this.findOne(id));
+    const album = await this.findOne(id);
 
-    const trackIndex = data.tracks.findIndex((track) => track.albumId === id);
+    // const trackIndex = data.tracks.findIndex((track) => track.albumId === id);
+    //
+    // if (trackIndex >= 0) {
+    //   data.tracks[trackIndex].albumId = null;
+    // }
+    // const favouriteAlbum = await this.favouriteService.findAlbum(id)
+    // if (favouriteAlbum) {
+    //   await this.favouriteService.deleteAlbumFromFav(id);
+    // }
 
-    if (trackIndex >= 0) {
-      data.tracks[trackIndex].albumId = null;
-    }
+    const deleted = await this.albumRepository.remove(album);
 
-    data.albums = data.albums.filter((album) => album.id !== id);
-    data.favourites.albums = data.favourites.albums.filter(
-      (favAlbum) => favAlbum !== id,
-    );
-
-    return { deleted };
+    return { deleted: Boolean(deleted) };
   }
 }
