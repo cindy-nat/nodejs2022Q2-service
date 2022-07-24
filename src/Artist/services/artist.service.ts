@@ -38,11 +38,15 @@ export class ArtistService {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const artist = this.artistRepository.findOneBy({ id: id });
+    const artist = await this.findArtist(id);
     if (!artist) {
       throw new NotFoundException();
     }
     return artist;
+  }
+
+  async findArtist(id: string): Promise<ArtistEntity> {
+    return this.artistRepository.findOneBy({ id: id });
   }
 
   async create(createArtistDto: CreateArtistDto): Promise<Artist> {

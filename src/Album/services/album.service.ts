@@ -36,7 +36,7 @@ export class AlbumService {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const album = this.albumRepository.findOneBy({ id: id });
+    const album = await this.albumRepository.findOneBy({ id: id });
     if (!album) {
       throw new NotFoundException();
     }
@@ -48,11 +48,15 @@ export class AlbumService {
   }
 
   async findArtist(artistId) {
-    return this.artistService.findOne(artistId);
+    return this.artistService.findArtist(artistId);
+  }
+
+  async findAlbum(id) {
+    return this.albumRepository.findOneBy(id);
   }
 
   async create(createAlbumDto: CreateAlbumDto): Promise<AlbumSchema> {
-    const artist = this.findArtist(createAlbumDto.artistId);
+    const artist = await this.findArtist(createAlbumDto.artistId);
 
     return this.albumRepository.create({
       name: createAlbumDto.name,
@@ -71,7 +75,7 @@ export class AlbumService {
 
     const album = await this.findOne(id);
 
-    const artist = this.findArtist(updateAlbumDto.artistId);
+    const artist = await this.findArtist(updateAlbumDto.artistId);
 
     album.name = updateAlbumDto.name || album.name;
     album.year = updateAlbumDto.year || album.year;
