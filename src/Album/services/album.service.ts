@@ -56,12 +56,12 @@ export class AlbumService {
 
   async create(createAlbumDto: CreateAlbumDto): Promise<AlbumSchema> {
     const artist = await this.findArtist(createAlbumDto.artistId);
-
-    return this.albumRepository.create({
+    const album = await this.albumRepository.create({
       name: createAlbumDto.name,
       year: createAlbumDto.year,
       artistId: artist ? createAlbumDto.artistId : null,
-    });
+    })
+    return await this.albumRepository.save(album);
   }
 
   async update(
