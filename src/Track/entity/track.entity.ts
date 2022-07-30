@@ -8,11 +8,11 @@ export class TrackEntity {
   @Column()
   name: string;
 
-  @ManyToOne(() => (ArtistEntity) => ArtistEntity.id)
+  // @ManyToOne(() => (ArtistEntity) => ArtistEntity.id)
   @Column()
   artistId: string | null;
 
-  @ManyToOne(() => (AlbumEntity) => AlbumEntity.id)
+  // @ManyToOne(() => (AlbumEntity) => AlbumEntity.id)
   @Column()
   albumId: string | null; // integer number, increments on update
 

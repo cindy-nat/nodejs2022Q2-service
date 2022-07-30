@@ -6,36 +6,20 @@ import { AlbumController, AlbumService } from './Album';
 import { TrackController, TrackService } from './Track';
 import { FavouriteController, FavouriteService } from './Favourite';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './user/entity/user.entity';
 import { UserModule } from './user/user.module';
+import { DataSource } from 'typeorm';
+import { ArtistModule } from "./Artist/artist.module";
+import typeOrmConfig = require("../typeorm.config");
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'db',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'nest-service',
-      entities: [UserEntity],
-      synchronize: true,
-    }),
+    TypeOrmModule.forRoot(typeOrmConfig),
     UserModule,
+    ArtistModule,
   ],
-  controllers: [
-    AppController,
-    ArtistController,
-    AlbumController,
-    TrackController,
-    FavouriteController,
-  ],
-  providers: [
-    AppService,
-    ArtistService,
-    AlbumService,
-    TrackService,
-    FavouriteService,
-  ],
+  controllers: [AppController, FavouriteController],
+  providers: [AppService, FavouriteService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private dataSource: DataSource) {}
+}

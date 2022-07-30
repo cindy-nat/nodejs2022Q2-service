@@ -22,11 +22,11 @@
       "docker:scan": "docker scan nodejs2022q2-service_nestjs",
       "docker:build": "docker-compose up --build",
       "docker:run": "docker compose up",
-      "typeorm:create": "npm run typeorm migration:create -- -n",
-      "typeorm:generate": "npm run typeorm migration:generate -- -n",
+      "typeorm": "npx typeorm-ts-node-commonjs --dataSource ./data-source.ts",
+      "typeorm:create": "npx typeorm migration:create -- -n",
+      "typeorm:generate": "npm run typeorm migration:generate src/migration/Migration --timestamp",
       "typeorm:run": "npm run typeorm migration:run",
-      "typeorm:revert": "npm run typeorm migration:revert",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm:revert": "npm run typeorm migration:revert"
    },
    "dependencies": {
       "@nestjs/common": "^8.0.0",

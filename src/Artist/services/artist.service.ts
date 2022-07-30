@@ -22,12 +22,12 @@ export class ArtistService {
   constructor(
     @InjectRepository(ArtistEntity)
     private artistRepository: Repository<ArtistEntity>,
-    @Inject(forwardRef(() => AlbumService))
-    private albumService: AlbumService,
-    @Inject(forwardRef(() => TrackService))
-    private trackService: TrackService,
-    @Inject(forwardRef(() => FavouriteService))
-    private favouriteService: FavouriteService,
+    // @Inject(forwardRef(() => AlbumService))
+    // private albumService: AlbumService,
+    // @Inject(forwardRef(() => TrackService))
+    // private trackService: TrackService,
+    // @Inject(forwardRef(() => FavouriteService))
+    // private favouriteService: FavouriteService,
   ) {}
 
   async findAll(): Promise<ArtistEntity[]> {
@@ -50,10 +50,11 @@ export class ArtistService {
   }
 
   async create(createArtistDto: CreateArtistDto): Promise<Artist> {
-    return this.artistRepository.create({
+    const artist = await this.artistRepository.create({
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
-    });
+    })
+    return await this.artistRepository.save(artist);
   }
 
   async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
@@ -78,10 +79,10 @@ export class ArtistService {
     }
     const artist = await this.findOne(id);
 
-    const album = await this.albumService.findOneByArtistId(artist.id);
-    if (album) {
-      await this.albumService.update(album.id, { artistId: null });
-    }
+    // const album = await this.albumService.findOneByArtistId(artist.id);
+    // if (album) {
+    //   await this.albumService.update(album.id, { artistId: null });
+    // }
 
     // const trackIndex = data.tracks.findIndex((track) => track.artistId === id);
 
@@ -92,7 +93,7 @@ export class ArtistService {
     // data.favourites.artists = data.favourites.artists.filter(
     //   (favArtist) => favArtist !== id,
     // );
-    await this.favouriteService.deleteArtistFromFav(id);
+    // await this.favouriteService.deleteArtistFromFav(id);
 
     const deleted = await this.artistRepository.remove(artist);
 

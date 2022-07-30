@@ -14,7 +14,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AlbumEntity } from '../entity/album.entity';
 import { ArtistService } from '../../Artist';
-import { ArtistEntity } from '../../Artist/entity/artist.entity';
 import { FavouriteService } from '../../Favourite';
 
 @Injectable()
@@ -24,8 +23,8 @@ export class AlbumService {
     private albumRepository: Repository<AlbumEntity>,
     @Inject(forwardRef(() => ArtistService))
     private artistService: ArtistService,
-    @Inject(forwardRef(() => FavouriteService))
-    private favouriteService: FavouriteService,
+    // @Inject(forwardRef(() => FavouriteService))
+    // private favouriteService: FavouriteService,
   ) {}
 
   async findAll(): Promise<AlbumSchema[]> {
@@ -68,7 +67,7 @@ export class AlbumService {
   async update(
     id: string,
     updateAlbumDto: UpdateAlbumDto,
-  ): Promise<ArtistEntity> {
+  ): Promise<AlbumEntity> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
@@ -81,7 +80,7 @@ export class AlbumService {
     album.year = updateAlbumDto.year || album.year;
     album.artistId = artist ? updateAlbumDto.artistId : album.artistId;
 
-    return artist;
+    return album;
   }
 
   async delete(id: string): Promise<DeleteType> {

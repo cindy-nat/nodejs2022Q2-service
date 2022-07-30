@@ -11,7 +11,7 @@ export class AlbumEntity {
   @Column()
   year: number;
 
-  @ManyToOne(() => (ArtistEntity) => ArtistEntity.id)
+  // @ManyToOne(() => (ArtistEntity) => ArtistEntity.id)
   @Column()
   artistId: string | null;
 }
