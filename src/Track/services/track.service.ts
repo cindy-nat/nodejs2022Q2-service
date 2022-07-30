@@ -1,7 +1,5 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,22 +10,15 @@ import { UpdateTrackDto } from '../dto/update-track.dto';
 import { DeleteType } from '../../general.schema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AlbumService } from '../../Album';
-import { FavouriteService } from '../../Favourite';
 import { TrackEntity } from '../entity/track.entity';
-import { ArtistService } from '../../Artist';
 
 @Injectable()
 export class TrackService {
   constructor(
     @InjectRepository(TrackEntity)
     private trackRepository: Repository<TrackEntity>,
-    @Inject(forwardRef(() => AlbumService))
-    private albumService: AlbumService,
-    @Inject(forwardRef(() => ArtistService))
-    private artistService: ArtistService,
-    @Inject(forwardRef(() => FavouriteService))
-    private favouriteService: FavouriteService,
+    // @Inject(forwardRef(() => FavouriteService))
+    // private favouriteService: FavouriteService,
   ) {}
 
   async findAll(): Promise<TrackSchema[]> {
@@ -45,24 +36,15 @@ export class TrackService {
     return track;
   }
 
-  findArtist(id) {
-    return this.artistService.findArtist(id);
-  }
-
-  findAlbum(id) {
-    return this.albumService.findAlbum(id);
-  }
-
   async create(createTrackDto: CreateTrackDto): Promise<TrackSchema> {
-    const artist = await this.findArtist(createTrackDto.artistId);
-    const album = await this.findAlbum(createTrackDto.albumId);
-
-    return this.trackRepository.create({
+    const track = await this.trackRepository.create({
       name: createTrackDto.name,
-      artistId: artist ? createTrackDto.artistId : null,
-      albumId: album ? createTrackDto.albumId : null,
+      artistId: createTrackDto.artistId ? createTrackDto.artistId : null,
+      albumId: createTrackDto.albumId ? createTrackDto.albumId : null,
       duration: createTrackDto.duration,
     });
+
+    return this.trackRepository.save(track);
   }
 
   async update(
@@ -75,13 +57,14 @@ export class TrackService {
 
     const track = await this.findOne(id);
 
-    const artist = this.findArtist(updateTrackDto.artistId);
-    const album = this.findAlbum(updateTrackDto.albumId);
-
     track.name = updateTrackDto.name || track.name;
     track.duration = updateTrackDto.duration || track.duration;
-    track.artistId = artist ? updateTrackDto.artistId : track.artistId;
-    track.albumId = album ? updateTrackDto.albumId : track.albumId;
+    track.artistId = updateTrackDto.artistId
+      ? updateTrackDto.artistId
+      : track.artistId;
+    track.albumId = updateTrackDto.albumId
+      ? updateTrackDto.albumId
+      : track.albumId;
 
     return track;
   }
@@ -92,10 +75,6 @@ export class TrackService {
     }
 
     const track = await this.findOne(id);
-
-    // data.favourites.tracks = data.favourites.tracks.filter(
-    //   (favTrack) => favTrack !== id,
-    // );
 
     const deleted = this.trackRepository.remove(track);
 

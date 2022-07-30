@@ -6,7 +6,7 @@ export class CreateAlbumDto {
 
   @IsOptional()
   @IsNumber()
-  year: number;
+  year: number | null;
 
   @IsOptional()
   @IsString()

@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import { ArtistModule } from "./Artist/artist.module";
 import typeOrmConfig = require("../typeorm.config");
 import { AlbumModel } from "./Album/album.model";
+import { TrackModule } from "./Track/track.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AlbumModel } from "./Album/album.model";
     UserModule,
     ArtistModule,
     AlbumModel,
+    TrackModule,
   ],
   controllers: [AppController, FavouriteController],
   providers: [AppService, FavouriteService],
