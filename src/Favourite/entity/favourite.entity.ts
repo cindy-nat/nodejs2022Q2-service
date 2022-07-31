@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ArtistEntity } from '../../Artist/entity/artist.entity';
 import { AlbumEntity } from '../../Album/entity/album.entity';
 import { TrackEntity } from '../../Track/entity/track.entity';
@@ -10,27 +10,27 @@ export class FavouriteEntity {
   @Exclude()
   id: number;
 
-  @ManyToOne(() => ArtistEntity, (ArtistEntity) => ArtistEntity, {
+  @ManyToMany(() => ArtistEntity, (ArtistEntity) => ArtistEntity, {
     nullable: true,
     onDelete: 'SET NULL',
-    cascade: true,
+    eager: true,
   })
-  @Column('text', { nullable: true, array: true, default: [] })
-  artistIds: (string | null)[];
+  @JoinTable()
+  artists: Array<ArtistEntity>;
 
-  @ManyToOne(() => AlbumEntity, (AlbumEntity) => AlbumEntity, {
+  @ManyToMany(() => AlbumEntity, (AlbumEntity) => AlbumEntity, {
     nullable: true,
     onDelete: 'SET NULL',
-    cascade: true,
+    eager: true,
   })
-  @Column('text', { nullable: true, array: true, default: [] })
-  albumIds: (string | null)[]; // integer number, increments on update
+  @JoinTable()
+  albums: Array<AlbumEntity>; // integer number, increments on update
 
-  @ManyToOne(() => TrackEntity, (TrackEntity) => TrackEntity, {
+  @ManyToMany(() => TrackEntity, (TrackEntity) => TrackEntity, {
     nullable: true,
     onDelete: 'SET NULL',
-    cascade: true,
+    eager: true,
   })
-  @Column('text', { nullable: true, array: true, default: [] })
-  trackIds: (string | null)[]; // integer number, increments on update
+  @JoinTable()
+  tracks: Array<TrackEntity>;
 }
