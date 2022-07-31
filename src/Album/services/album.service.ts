@@ -14,17 +14,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AlbumEntity } from '../entity/album.entity';
 import { ArtistService } from '../../Artist';
-import { FavouriteService } from '../../Favourite';
+import { AppDataSource } from '../../../data-source';
 
 @Injectable()
 export class AlbumService {
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
-    @Inject(forwardRef(() => ArtistService))
-    private artistService: ArtistService,
-    // @Inject(forwardRef(() => FavouriteService))
-    // private favouriteService: FavouriteService,
   ) {}
 
   async findAll(): Promise<AlbumSchema[]> {
@@ -46,21 +42,36 @@ export class AlbumService {
     return this.albumRepository.findOneBy({ artistId: artistId });
   }
 
-  async findArtist(artistId) {
-    return this.artistService.findArtist(artistId);
-  }
+  // async findArtist(artistId) {
+  //   return this.artistService.findArtist(artistId);
+  // }
 
   async findAlbum(id) {
     return this.albumRepository.findOneBy(id);
   }
 
   async create(createAlbumDto: CreateAlbumDto): Promise<AlbumSchema> {
-    const artist = await this.findArtist(createAlbumDto.artistId);
+    if (createAlbumDto.artistId && !validate(createAlbumDto.artistId)) {
+      throw new BadRequestException();
+    }
+
+    const artistsRepository = AppDataSource.getRepository('artist_entity');
+
+    if(createAlbumDto.artistId) {
+      const artist = await artistsRepository.findBy({
+        id: createAlbumDto.artistId,
+      });
+
+      if(!artist.length) {
+        throw new NotFoundException('Artist not found')
+      }
+    }
+
     const album = await this.albumRepository.create({
       name: createAlbumDto.name,
       year: createAlbumDto.year,
-      artistId: artist ? createAlbumDto.artistId : null,
-    })
+      artistId: createAlbumDto.artistId ? createAlbumDto.artistId : null,
+    });
     return await this.albumRepository.save(album);
   }
 
@@ -74,11 +85,11 @@ export class AlbumService {
 
     const album = await this.findOne(id);
 
-    const artist = await this.findArtist(updateAlbumDto.artistId);
+    // const artist = await this.findArtist(updateAlbumDto.artistId);
 
     album.name = updateAlbumDto.name || album.name;
     album.year = updateAlbumDto.year || album.year;
-    album.artistId = artist ? updateAlbumDto.artistId : album.artistId;
+    album.artistId = updateAlbumDto.artistId ? updateAlbumDto.artistId : album.artistId;
 
     return album;
   }

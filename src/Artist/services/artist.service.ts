@@ -1,7 +1,5 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,21 +11,12 @@ import { DeleteType } from '../../general.schema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArtistEntity } from '../entity/artist.entity';
-import { AlbumService } from '../../Album';
-import { TrackService } from '../../Track';
-import { FavouriteService } from '../../Favourite';
 
 @Injectable()
 export class ArtistService {
   constructor(
     @InjectRepository(ArtistEntity)
-    private artistRepository: Repository<ArtistEntity>,
-    // @Inject(forwardRef(() => AlbumService))
-    // private albumService: AlbumService,
-    // @Inject(forwardRef(() => TrackService))
-    // private trackService: TrackService,
-    // @Inject(forwardRef(() => FavouriteService))
-    // private favouriteService: FavouriteService,
+    private artistRepository: Repository<ArtistEntity>, // @Inject(forwardRef(() => AlbumService)) // private albumService: AlbumService, // @Inject(forwardRef(() => TrackService)) // private trackService: TrackService, // @Inject(forwardRef(() => FavouriteService)) // private favouriteService: FavouriteService,
   ) {}
 
   async findAll(): Promise<ArtistEntity[]> {
@@ -53,7 +42,7 @@ export class ArtistService {
     const artist = await this.artistRepository.create({
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
-    })
+    });
     return await this.artistRepository.save(artist);
   }
 

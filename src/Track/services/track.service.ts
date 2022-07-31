@@ -16,9 +16,7 @@ import { TrackEntity } from '../entity/track.entity';
 export class TrackService {
   constructor(
     @InjectRepository(TrackEntity)
-    private trackRepository: Repository<TrackEntity>,
-    // @Inject(forwardRef(() => FavouriteService))
-    // private favouriteService: FavouriteService,
+    private trackRepository: Repository<TrackEntity>, // @Inject(forwardRef(() => FavouriteService)) // private favouriteService: FavouriteService,
   ) {}
 
   async findAll(): Promise<TrackSchema[]> {
