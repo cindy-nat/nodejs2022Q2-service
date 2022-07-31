@@ -15,16 +15,14 @@ export class TrackEntity {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  @Column()
-  @IsOptional()
+  @Column({ nullable: true })
   artistId: string | null;
 
   @ManyToOne(() => AlbumEntity, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  @Column()
-  @IsOptional()
+  @Column({ nullable: true })
   albumId: string | null; // integer number, increments on update
 
   @Column()

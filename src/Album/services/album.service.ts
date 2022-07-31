@@ -15,14 +15,18 @@ import { Repository } from 'typeorm';
 import { AlbumEntity } from '../entity/album.entity';
 import { ArtistService } from '../../Artist';
 import { AppDataSource } from '../../../data-source';
+import { ArtistEntity } from '../../Artist/entity/artist.entity';
 
 @Injectable()
 export class AlbumService {
+  private artistsRepository: Repository<ArtistEntity>;
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
-  ) {}
+) {
+    this.artistsRepository = AppDataSource.getRepository('artist_entity');
 
+  }
   async findAll(): Promise<AlbumSchema[]> {
     return this.albumRepository.find();
   }
@@ -42,10 +46,6 @@ export class AlbumService {
     return this.albumRepository.findOneBy({ artistId: artistId });
   }
 
-  // async findArtist(artistId) {
-  //   return this.artistService.findArtist(artistId);
-  // }
-
   async findAlbum(id) {
     return this.albumRepository.findOneBy(id);
   }
@@ -54,15 +54,13 @@ export class AlbumService {
     if (createAlbumDto.artistId && !validate(createAlbumDto.artistId)) {
       throw new BadRequestException();
     }
-
-    const artistsRepository = AppDataSource.getRepository('artist_entity');
-
+    
     if(createAlbumDto.artistId) {
-      const artist = await artistsRepository.findBy({
+      const artist = await this.artistsRepository.findBy({
         id: createAlbumDto.artistId,
       });
 
-      if(!artist.length) {
+      if (!artist.length) {
         throw new NotFoundException('Artist not found')
       }
     }
