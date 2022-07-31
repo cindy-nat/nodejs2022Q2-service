@@ -8,6 +8,7 @@ import { ArtistModule } from './Artist/artist.module';
 import typeOrmConfig = require('../typeorm.config');
 import { AlbumModel } from './Album/album.model';
 import { TrackModule } from './Track/track.module';
+import { FavouriteModule } from './Favourite/favourite.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TrackModule } from './Track/track.module';
     ArtistModule,
     AlbumModel,
     TrackModule,
+    FavouriteModule,
   ],
   controllers: [AppController],
   providers: [AppService],
