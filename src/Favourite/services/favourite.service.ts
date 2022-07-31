@@ -38,8 +38,8 @@ export class FavouriteService {
     };
     const data = await this.favouriteRepository.find();
 
-    console.log(data)
-    if(data.length) {
+    console.log(data);
+    if (data.length) {
       for (const artist of data[0].artistIds) {
         const artistData = await this.artistRepository.findBy({ id: artist });
         result.artists.push(artistData);
@@ -52,12 +52,12 @@ export class FavouriteService {
 
       for (const track of data[0].trackIds) {
         const trackData = await this.trackRepository.findBy({ id: track });
-        console.log(trackData)
+        console.log(trackData);
         result.tracks.push(trackData);
       }
     }
 
-    return result
+    return result;
   }
 
   async addTrackToFav(id: string): Promise<TrackEntity> {
@@ -73,7 +73,7 @@ export class FavouriteService {
 
     const data = await this.favouriteRepository.find();
 
-    if(data.length === 0) {
+    if (data.length === 0) {
       const table = this.favouriteRepository.create({
         trackIds: [],
         albumIds: [],
@@ -124,8 +124,7 @@ export class FavouriteService {
 
     const data = await this.favouriteRepository.find();
 
-
-    if(data.length) {
+    if (data.length) {
       data[0].artistIds = [...data[0].artistIds, id];
     } else {
       this.favouriteRepository.create({ artistIds: [id] });
@@ -146,7 +145,7 @@ export class FavouriteService {
       throw new NotFoundException();
     }
 
-    data[0].trackIds = data[0].trackIds.filter((track) => track !== id)
+    data[0].trackIds = data[0].trackIds.filter((track) => track !== id);
 
     return { deleted: true };
   }
@@ -163,7 +162,7 @@ export class FavouriteService {
       throw new NotFoundException();
     }
 
-    data[0].albumIds = data[0].albumIds.filter((album) => album !== id)
+    data[0].albumIds = data[0].albumIds.filter((album) => album !== id);
 
     return { deleted: true };
   }
@@ -180,7 +179,7 @@ export class FavouriteService {
       throw new NotFoundException();
     }
 
-    data[0].artistIds = data[0].artistIds.filter((artist) => artist !== id)
+    data[0].artistIds = data[0].artistIds.filter((artist) => artist !== id);
 
     return { deleted: true };
   }

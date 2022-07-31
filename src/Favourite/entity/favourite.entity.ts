@@ -23,7 +23,7 @@ export class FavouriteEntity {
     onDelete: 'SET NULL',
     cascade: true,
   })
-  @Column('text',{ nullable: true, array: true, default: [] })
+  @Column('text', { nullable: true, array: true, default: [] })
   albumIds: (string | null)[]; // integer number, increments on update
 
   @ManyToOne(() => TrackEntity, (TrackEntity) => TrackEntity, {
