@@ -16,15 +16,18 @@ import { AlbumEntity } from '../entity/album.entity';
 import { ArtistService } from '../../Artist';
 import { AppDataSource } from '../../../data-source';
 import { ArtistEntity } from '../../Artist/entity/artist.entity';
+import { TrackEntity } from '../../Track/entity/track.entity';
 
 @Injectable()
 export class AlbumService {
   private artistsRepository: Repository<ArtistEntity>;
+  private trackRepository: Repository<TrackEntity>;
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
 ) {
     this.artistsRepository = AppDataSource.getRepository('artist_entity');
+    this.trackRepository = AppDataSource.getRepository('track_entity');
 
   }
   async findAll(): Promise<AlbumSchema[]> {
@@ -97,6 +100,13 @@ export class AlbumService {
       throw new BadRequestException();
     }
     const album = await this.findOne(id);
+
+    const tracks = await this.trackRepository.findBy({ albumId: id });
+    if(tracks.length) {
+      for (const track of tracks) {
+        await this.trackRepository.update(track.id, { albumId: null });
+      }
+    }
 
     // const trackIndex = data.tracks.findIndex((track) => track.albumId === id);
     //

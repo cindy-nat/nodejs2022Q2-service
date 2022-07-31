@@ -11,13 +11,21 @@ import { DeleteType } from '../../general.schema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArtistEntity } from '../entity/artist.entity';
+import { AlbumEntity } from '../../Album/entity/album.entity';
+import { TrackEntity } from '../../Track/entity/track.entity';
+import { AppDataSource } from '../../../data-source';
 
 @Injectable()
 export class ArtistService {
+  private trackRepository: Repository<TrackEntity>;
+  private albumRepository: Repository<AlbumEntity>;
   constructor(
     @InjectRepository(ArtistEntity)
     private artistRepository: Repository<ArtistEntity>, // @Inject(forwardRef(() => AlbumService)) // private albumService: AlbumService, // @Inject(forwardRef(() => TrackService)) // private trackService: TrackService, // @Inject(forwardRef(() => FavouriteService)) // private favouriteService: FavouriteService,
-  ) {}
+  ) {
+    this.trackRepository = AppDataSource.getRepository('track_entity');
+    this.albumRepository = AppDataSource.getRepository('album_entity');
+  }
 
   async findAll(): Promise<ArtistEntity[]> {
     return this.artistRepository.find();
@@ -66,18 +74,22 @@ export class ArtistService {
     if (!validate(id)) {
       throw new BadRequestException();
     }
+
     const artist = await this.findOne(id);
 
-    // const album = await this.albumService.findOneByArtistId(artist.id);
-    // if (album) {
-    //   await this.albumService.update(album.id, { artistId: null });
-    // }
+    const albums = await this.albumRepository.findBy({ artistId: id });
+    if(albums.length) {
+      for (const album of albums) {
+        await this.albumRepository.update(album.id, { artistId: null });
+      }
+    }
 
-    // const trackIndex = data.tracks.findIndex((track) => track.artistId === id);
-
-    // if (trackIndex >= 0) {
-    //   data.tracks[trackIndex].artistId = null;
-    // }
+    const tracks = await this.trackRepository.findBy({ artistId: id });
+    if(tracks.length) {
+      for (const track of tracks) {
+        await this.trackRepository.update(track.id, { artistId: null });
+      }
+    }
 
     // data.favourites.artists = data.favourites.artists.filter(
     //   (favArtist) => favArtist !== id,

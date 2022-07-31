@@ -109,9 +109,12 @@ export class TrackService {
       throw new BadRequestException();
     }
 
-    const track = await this.findOne(id);
+    const track = await this.trackRepository.findOneBy({ id: id });
+    if (!track) {
+      throw new NotFoundException();
+    }
 
-    const deleted = this.trackRepository.remove(track);
+    const deleted = await this.trackRepository.remove(track);
 
     return { deleted: Boolean(deleted) };
   }
