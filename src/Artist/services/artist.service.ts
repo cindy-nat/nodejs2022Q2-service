@@ -78,14 +78,14 @@ export class ArtistService {
     const artist = await this.findOne(id);
 
     const albums = await this.albumRepository.findBy({ artistId: id });
-    if(albums.length) {
+    if (albums.length) {
       for (const album of albums) {
         await this.albumRepository.update(album.id, { artistId: null });
       }
     }
 
     const tracks = await this.trackRepository.findBy({ artistId: id });
-    if(tracks.length) {
+    if (tracks.length) {
       for (const track of tracks) {
         await this.trackRepository.update(track.id, { artistId: null });
       }

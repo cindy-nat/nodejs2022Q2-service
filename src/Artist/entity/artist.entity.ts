@@ -1,6 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, RelationOptions } from 'typeorm';
-import { Exclude } from 'class-transformer';
-import { AlbumEntity } from '../../Album/entity/album.entity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class ArtistEntity {

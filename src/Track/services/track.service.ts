@@ -48,13 +48,13 @@ export class TrackService {
       throw new BadRequestException();
     }
 
-    if(createTrackDto.artistId) {
+    if (createTrackDto.artistId) {
       const artist = await this.artistsRepository.findBy({
         id: createTrackDto.artistId,
       });
 
       if (!artist.length) {
-        throw new NotFoundException('Artist not found')
+        throw new NotFoundException('Artist not found');
       }
     }
 
@@ -62,13 +62,13 @@ export class TrackService {
       throw new BadRequestException();
     }
 
-    if(createTrackDto.albumId) {
+    if (createTrackDto.albumId) {
       const album = await this.albumRepository.findBy({
         id: createTrackDto.albumId,
       });
 
       if (!album.length) {
-        throw new NotFoundException('Artist not found')
+        throw new NotFoundException('Artist not found');
       }
     }
 

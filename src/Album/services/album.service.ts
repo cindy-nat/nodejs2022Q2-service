@@ -1,7 +1,5 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,7 +11,6 @@ import { DeleteType } from '../../general.schema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AlbumEntity } from '../entity/album.entity';
-import { ArtistService } from '../../Artist';
 import { AppDataSource } from '../../../data-source';
 import { ArtistEntity } from '../../Artist/entity/artist.entity';
 import { TrackEntity } from '../../Track/entity/track.entity';
@@ -25,10 +22,9 @@ export class AlbumService {
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
-) {
+  ) {
     this.artistsRepository = AppDataSource.getRepository('artist_entity');
     this.trackRepository = AppDataSource.getRepository('track_entity');
-
   }
   async findAll(): Promise<AlbumSchema[]> {
     return this.albumRepository.find();
@@ -57,14 +53,14 @@ export class AlbumService {
     if (createAlbumDto.artistId && !validate(createAlbumDto.artistId)) {
       throw new BadRequestException();
     }
-    
-    if(createAlbumDto.artistId) {
+
+    if (createAlbumDto.artistId) {
       const artist = await this.artistsRepository.findBy({
         id: createAlbumDto.artistId,
       });
 
       if (!artist.length) {
-        throw new NotFoundException('Artist not found')
+        throw new NotFoundException('Artist not found');
       }
     }
 
@@ -90,7 +86,9 @@ export class AlbumService {
 
     album.name = updateAlbumDto.name || album.name;
     album.year = updateAlbumDto.year || album.year;
-    album.artistId = updateAlbumDto.artistId ? updateAlbumDto.artistId : album.artistId;
+    album.artistId = updateAlbumDto.artistId
+      ? updateAlbumDto.artistId
+      : album.artistId;
 
     return album;
   }
@@ -102,7 +100,7 @@ export class AlbumService {
     const album = await this.findOne(id);
 
     const tracks = await this.trackRepository.findBy({ albumId: id });
-    if(tracks.length) {
+    if (tracks.length) {
       for (const track of tracks) {
         await this.trackRepository.update(track.id, { albumId: null });
       }
