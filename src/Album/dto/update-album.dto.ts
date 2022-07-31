@@ -11,5 +11,5 @@ export class UpdateAlbumDto {
 
   @IsOptional()
   @IsString()
-  artistId: string;
+  artistId: string | null;
 }

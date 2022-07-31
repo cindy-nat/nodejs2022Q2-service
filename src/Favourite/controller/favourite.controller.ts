@@ -8,11 +8,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { FavouriteService } from '../services/favourite.service';
-import { FavouriteSchema } from '../schemas/favourite.schema';
 import { TrackSchema } from '../../Track';
 import { DeleteType } from '../../general.schema';
 import { AlbumSchema } from '../../Album';
 import { Artist } from '../../Artist';
+import { FavouriteEntity } from '../entity/favourite.entity';
 
 @Controller('favs')
 export class FavouriteController {
@@ -21,7 +21,7 @@ export class FavouriteController {
   @Get()
   @HttpCode(200)
   @Header('Content-type', 'application/json')
-  async findAll(): Promise<FavouriteSchema> {
+  async findAll(): Promise<FavouriteEntity> {
     return this.favouriteService.findAll();
   }
 

@@ -3,38 +3,55 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { data } from '../../data';
 import { Artist } from '../schemas/artist.schema';
-import { v4 as uuidv4, validate } from 'uuid';
+import { validate } from 'uuid';
 import { CreateArtistDto } from '../dto/create-artist.dto';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
 import { DeleteType } from '../../general.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ArtistEntity } from '../entity/artist.entity';
+import { AlbumEntity } from '../../Album/entity/album.entity';
+import { TrackEntity } from '../../Track/entity/track.entity';
+import { AppDataSource } from '../../../data-source';
 
 @Injectable()
 export class ArtistService {
-  async findAll(): Promise<Artist[]> {
-    return data.artists;
+  private trackRepository: Repository<TrackEntity>;
+  private albumRepository: Repository<AlbumEntity>;
+  constructor(
+    @InjectRepository(ArtistEntity)
+    private artistRepository: Repository<ArtistEntity>, // @Inject(forwardRef(() => AlbumService)) // private albumService: AlbumService, // @Inject(forwardRef(() => TrackService)) // private trackService: TrackService, // @Inject(forwardRef(() => FavouriteService)) // private favouriteService: FavouriteService,
+  ) {
+    this.trackRepository = AppDataSource.getRepository('track_entity');
+    this.albumRepository = AppDataSource.getRepository('album_entity');
   }
 
-  async findOne(id: string): Promise<Artist> {
+  async findAll(): Promise<ArtistEntity[]> {
+    return this.artistRepository.find();
+  }
+
+  async findOne(id: string): Promise<ArtistEntity> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const artist = data.artists.find((user) => user.id === id);
+    const artist = await this.findArtist(id);
     if (!artist) {
       throw new NotFoundException();
     }
     return artist;
   }
 
+  async findArtist(id: string): Promise<ArtistEntity> {
+    return this.artistRepository.findOneBy({ id: id });
+  }
+
   async create(createArtistDto: CreateArtistDto): Promise<Artist> {
-    const artist = {
+    const artist = await this.artistRepository.create({
       name: createArtistDto.name,
       grammy: createArtistDto.grammy,
-      id: uuidv4(),
-    };
-    data.artists.push(artist);
-    return artist;
+    });
+    return await this.artistRepository.save(artist);
   }
 
   async update(id: string, updateArtistDto: UpdateArtistDto): Promise<Artist> {
@@ -42,44 +59,45 @@ export class ArtistService {
       throw new BadRequestException();
     }
 
-    const artist = data.artists.find((artist) => artist.id === id);
+    const artist = await this.findOne(id);
 
-    if (!artist) {
-      throw new NotFoundException();
-    }
-
-    const artistIndex = data.artists.findIndex((artist) => artist.id === id);
-
-    data.artists[artistIndex].name = updateArtistDto.name || artist.name;
-    data.artists[artistIndex].grammy =
+    artist.name = updateArtistDto.name || artist.name;
+    artist.grammy =
       typeof updateArtistDto.grammy === 'boolean'
         ? updateArtistDto.grammy
         : artist.grammy;
 
-    return this.findOne(id);
+    return artist;
   }
 
   async delete(id: string): Promise<DeleteType> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const deleted = Boolean(await this.findOne(id));
 
-    data.artists = data.artists.filter((artist) => artist.id !== id);
-    const albumIndex = data.albums.findIndex((album) => album.artistId === id);
-    const trackIndex = data.tracks.findIndex((track) => track.artistId === id);
+    const artist = await this.findOne(id);
 
-    if (albumIndex >= 0) {
-      data.albums[albumIndex].artistId = null;
-    }
-    if (trackIndex >= 0) {
-      data.tracks[trackIndex].artistId = null;
+    const albums = await this.albumRepository.findBy({ artistId: id });
+    if (albums.length) {
+      for (const album of albums) {
+        await this.albumRepository.update(album.id, { artistId: null });
+      }
     }
 
-    data.favourites.artists = data.favourites.artists.filter(
-      (favArtist) => favArtist !== id,
-    );
+    const tracks = await this.trackRepository.findBy({ artistId: id });
+    if (tracks.length) {
+      for (const track of tracks) {
+        await this.trackRepository.update(track.id, { artistId: null });
+      }
+    }
 
-    return { deleted };
+    // data.favourites.artists = data.favourites.artists.filter(
+    //   (favArtist) => favArtist !== id,
+    // );
+    // await this.favouriteService.deleteArtistFromFav(id);
+
+    const deleted = await this.artistRepository.remove(artist);
+
+    return { deleted: Boolean(deleted) };
   }
 }

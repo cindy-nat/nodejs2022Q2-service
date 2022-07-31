@@ -5,51 +5,44 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { User } from '../schemas/user.schema';
-import { data } from '../../data';
 import { validate } from 'uuid';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { DeleteType } from '../../general.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UserEntity } from '../entity/user.entity';
 
 @Injectable()
 export class UserService {
-  getUserWithoutPassword(user: User) {
-    return {
-      login: user.login,
-      id: user.id,
-      version: user.version,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
+  constructor(
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
+  ) {}
+
+  async findAll() {
+    const users = await this.usersRepository.find();
+    return users.map((user) => user.toResponse());
   }
 
-  async findAll(): Promise<Omit<User, 'password'>[]> {
-    return data.users.map((user) => this.getUserWithoutPassword(user));
-  }
-
-  async findOne(id: string): Promise<Omit<User, 'password'>> {
+  async findOne(id: string) {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const user = data.users.find((user) => user.id === id);
+    const user = await this.usersRepository.findOneBy({ id: id });
     if (!user) {
       throw new NotFoundException();
     }
-    return this.getUserWithoutPassword(user);
+    return user.toResponse();
   }
 
-  async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    const user = {
+  async create(createUserDto: CreateUserDto) {
+    const user = this.usersRepository.create({
       login: createUserDto.login,
       password: createUserDto.password,
-      id: uuidv4(),
       version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-    data.users.push(user);
-    return this.getUserWithoutPassword(user);
+    });
+    return (await this.usersRepository.save(user)).toResponse();
   }
 
   async update(
@@ -59,7 +52,7 @@ export class UserService {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const user = data.users.find((user) => user.id === id);
+    const user = await this.usersRepository.findOneBy({ id: id });
 
     if (!user) {
       throw new NotFoundException();
@@ -71,23 +64,24 @@ export class UserService {
       throw new ForbiddenException();
     }
 
-    const userIndex = data.users.findIndex((user) => user.id === id);
+    user.password = updateUserDto.newPassword;
+    user.version = user.version + 1;
 
-    data.users[userIndex].password = updateUserDto.newPassword;
-    data.users[userIndex].version = data.users[userIndex].version + 1;
-    data.users[userIndex].updatedAt = Date.now();
+    await this.usersRepository.save(user);
 
-    return this.findOne(id);
+    return user.toResponse();
   }
 
   async delete(id: string): Promise<DeleteType> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
-    const deleted = Boolean(await this.findOne(id));
+    const user = await this.usersRepository.findOneBy({ id: id });
+    if (!user) {
+      throw new NotFoundException();
+    }
+    const deleted = await this.usersRepository.remove(user);
 
-    data.users = data.users.filter((user) => user.id !== id);
-
-    return { deleted };
+    return { deleted: Boolean(deleted) };
   }
 }
