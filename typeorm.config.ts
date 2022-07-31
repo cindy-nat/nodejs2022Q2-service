@@ -1,4 +1,7 @@
 import { DataSourceOptions } from 'typeorm';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
@@ -6,7 +9,7 @@ const typeOrmConfig: DataSourceOptions = {
   port: +process.env.POSTGRES_PORT || 5432,
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.POSTGRES_DB || 'nest-service',
+  database: process.env.DB_NAME || 'nest-service',
   entities: [__dirname + '/**/*.entity.ts', __dirname + '/**/*.entity.js'],
   migrationsRun: false,
   logging: true,
