@@ -62,7 +62,9 @@ export class AuthService {
 
   async refresh(token: string) {
     const tokenInfo = this.jwtService.decode(token);
-    const foundUser = await this.userRepository.findOneBy({ id: tokenInfo.sub });
+    const foundUser = await this.userRepository.findOneBy({
+      id: tokenInfo.sub,
+    });
     if (!foundUser) {
       throw new NotFoundException();
     }
