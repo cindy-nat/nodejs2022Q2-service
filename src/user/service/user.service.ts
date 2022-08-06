@@ -12,6 +12,7 @@ import { DeleteType } from '../../general.schema';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -36,10 +37,30 @@ export class UserService {
     return user.toResponse();
   }
 
+  async findOneByLogin(login: string, password: string) {
+    const users = await this.usersRepository.findBy({ login: login });
+    let user = null
+    for (let i = 0; i < users.length; i++) {
+      const isPasswordMatched = bcrypt.compare(password, users[i].password)
+      if(isPasswordMatched) {
+        user = users[i];
+        break;
+      }
+    }
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
+  }
+
   async create(createUserDto: CreateUserDto) {
+    const saltRounds = 10;
+    const salt = await bcrypt.genSaltSync(saltRounds);
+    const hash = await bcrypt.hashSync(createUserDto.password, salt);
+
     const user = this.usersRepository.create({
       login: createUserDto.login,
-      password: createUserDto.password,
+      password: hash,
       version: 1,
     });
     return (await this.usersRepository.save(user)).toResponse();
@@ -58,13 +79,17 @@ export class UserService {
       throw new NotFoundException();
     }
 
-    const oldPassword = user.password;
+    const isPasswordMatched = await bcrypt.compare(user.password, updateUserDto.oldPassword)
 
-    if (updateUserDto.oldPassword !== oldPassword) {
+    if (!isPasswordMatched) {
       throw new ForbiddenException();
     }
 
-    user.password = updateUserDto.newPassword;
+    const saltRounds = 10;
+    const salt = await bcrypt.genSaltSync(saltRounds);
+    const hash = await bcrypt.hashSync(updateUserDto.newPassword, salt);
+
+    user.password = hash;
     user.version = user.version + 1;
 
     await this.usersRepository.save(user);
