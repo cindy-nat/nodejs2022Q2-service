@@ -24,7 +24,7 @@ export class AuthService {
     }
     let user = null;
     for (let i = 0; i < users.length; i++) {
-      const isPasswordMatched = bcrypt.compare(pass, users[i].password);
+      const isPasswordMatched = await bcrypt.compare(pass, users[i].password);
       if (isPasswordMatched) {
         user = users[i];
         break;
