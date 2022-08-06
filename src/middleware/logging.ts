@@ -17,14 +17,13 @@ export class LoggerMiddleware implements NestMiddleware {
 
   use(request, response: Response, next: NextFunction): void {
     const { method, body, params, originalUrl } = request;
+    const { statusCode } = response;
 
     const queryString = Object.entries(params)
       .map(([key, value]) => `${key}=${value}`)
       .join('&');
 
     response.on('finish', () => {
-      const { statusCode } = response;
-
       const log = `\n method: ${method} url:${originalUrl} ${queryString}, body: ${JSON.stringify(
         body,
       )}, status: ${statusCode}`;
