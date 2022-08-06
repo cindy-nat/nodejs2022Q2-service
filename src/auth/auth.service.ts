@@ -5,6 +5,9 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../user/entity/user.entity';
 import { AppDataSource } from '../../data-source';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Injectable()
 export class AuthService {
@@ -16,6 +19,9 @@ export class AuthService {
 
   async validateUser(username: string, pass: string): Promise<any> {
     const users = await this.userRepository.findBy({ login: username });
+    if (users.length === 0) {
+      throw new NotFoundException();
+    }
     let user = null;
     for (let i = 0; i < users.length; i++) {
       const isPasswordMatched = bcrypt.compare(pass, users[i].password);
@@ -48,6 +54,24 @@ export class AuthService {
     const payload = { username: userData.login, sub: userData.id };
     return {
       accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, {
+        expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME,
+      }),
+    };
+  }
+
+  async refresh(token: string) {
+    const tokenInfo = this.jwtService.decode(token);
+    const foundUser = await this.userRepository.findOneBy({ id: tokenInfo.sub });
+    if (!foundUser) {
+      throw new NotFoundException();
+    }
+    const payload = { username: foundUser.login, sub: foundUser.id };
+    return {
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, {
+        expiresIn: process.env.TOKEN_REFRESH_EXPIRE_TIME,
+      }),
     };
   }
 }
