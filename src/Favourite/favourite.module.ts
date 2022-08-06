@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FavouriteEntity } from './entity/favourite.entity';
 import { FavouriteService } from './services/favourite.service';
 import { FavouriteController } from './controller/favourite.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FavouriteEntity])],
+  imports: [TypeOrmModule.forFeature([FavouriteEntity]), AuthModule],
   providers: [FavouriteService],
   controllers: [FavouriteController],
 })

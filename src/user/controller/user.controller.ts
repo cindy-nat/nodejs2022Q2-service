@@ -7,20 +7,21 @@ import {
   Param,
   Post,
   Put,
-  Delete, UseGuards,
+  Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { User } from '../schemas/user.schema';
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { DeleteType } from '../../general.schema';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -28,7 +29,7 @@ export class UserController {
     return await this.userService.findAll();
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @Header('Content-type', 'application/json')
   async findOne(@Param('id') id: string): Promise<Omit<User, 'password'>> {
@@ -44,6 +45,7 @@ export class UserController {
     return await this.userService.create(createUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -54,7 +56,7 @@ export class UserController {
     return await this.userService.update(id, updateUserDto);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')

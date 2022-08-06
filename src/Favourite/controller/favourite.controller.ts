@@ -5,7 +5,8 @@ import {
   Header,
   HttpCode,
   Param,
-  Post, UseGuards,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import { FavouriteService } from '../services/favourite.service';
 import { TrackSchema } from '../../Track';
@@ -13,13 +14,13 @@ import { DeleteType } from '../../general.schema';
 import { AlbumSchema } from '../../Album';
 import { Artist } from '../../Artist';
 import { FavouriteEntity } from '../entity/favourite.entity';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('favs')
 export class FavouriteController {
   constructor(private readonly favouriteService: FavouriteService) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -27,7 +28,7 @@ export class FavouriteController {
     return this.favouriteService.findAll();
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Post('track/:id')
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -35,7 +36,7 @@ export class FavouriteController {
     return this.favouriteService.addTrackToFav(id);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Post('album/:id')
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -43,7 +44,7 @@ export class FavouriteController {
     return this.favouriteService.addAlbumToFav(id);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Post('artist/:id')
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -51,7 +52,7 @@ export class FavouriteController {
     return this.favouriteService.addArtistToFav(id);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Delete('track/:id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
@@ -59,7 +60,7 @@ export class FavouriteController {
     return this.favouriteService.deleteTrackFromFav(id);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Delete('album/:id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
@@ -67,7 +68,7 @@ export class FavouriteController {
     return this.favouriteService.deleteAlbumFromFav(id);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Delete('artist/:id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')

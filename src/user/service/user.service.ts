@@ -37,26 +37,10 @@ export class UserService {
     return user.toResponse();
   }
 
-  async findOneByLogin(login: string, password: string) {
-    const users = await this.usersRepository.findBy({ login: login });
-    let user = null
-    for (let i = 0; i < users.length; i++) {
-      const isPasswordMatched = bcrypt.compare(password, users[i].password)
-      if(isPasswordMatched) {
-        user = users[i];
-        break;
-      }
-    }
-    if (!user) {
-      throw new NotFoundException();
-    }
-    return user;
-  }
-
   async create(createUserDto: CreateUserDto) {
     const saltRounds = 10;
-    const salt = await bcrypt.genSaltSync(saltRounds);
-    const hash = await bcrypt.hashSync(createUserDto.password, salt);
+    const salt = bcrypt.genSaltSync(saltRounds);
+    const hash = bcrypt.hashSync(createUserDto.password, salt);
 
     const user = this.usersRepository.create({
       login: createUserDto.login,
@@ -79,15 +63,18 @@ export class UserService {
       throw new NotFoundException();
     }
 
-    const isPasswordMatched = await bcrypt.compare(user.password, updateUserDto.oldPassword)
+    const isPasswordMatched = await bcrypt.compare(
+      updateUserDto.oldPassword,
+      user.password,
+    );
 
     if (!isPasswordMatched) {
       throw new ForbiddenException();
     }
 
     const saltRounds = 10;
-    const salt = await bcrypt.genSaltSync(saltRounds);
-    const hash = await bcrypt.hashSync(updateUserDto.newPassword, salt);
+    const salt = bcrypt.genSaltSync(saltRounds);
+    const hash = bcrypt.hashSync(updateUserDto.newPassword, salt);
 
     user.password = hash;
     user.version = user.version + 1;

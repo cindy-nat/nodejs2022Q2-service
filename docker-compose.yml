@@ -41,5 +41,6 @@ services:
     container_name: nest-app
     volumes:
       - .:/app
+      - /app/node_modules
     depends_on:
       - db

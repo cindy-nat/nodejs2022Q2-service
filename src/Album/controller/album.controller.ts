@@ -7,20 +7,21 @@ import {
   Param,
   Post,
   Put,
-  Delete, UseGuards,
+  Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { DeleteType } from '../../general.schema';
 import { AlbumSchema } from '../schemas/album.schema';
 import { AlbumService } from '../services/album.service';
 import { CreateAlbumDto } from '../dto/create-album.dto';
 import { UpdateAlbumDto } from '../dto/update-album.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('album')
 export class AlbumController {
   constructor(private readonly albumService: AlbumService) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -28,14 +29,14 @@ export class AlbumController {
     return this.albumService.findAll();
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @Header('Content-type', 'application/json')
   async findOne(@Param('id') id: string): Promise<AlbumSchema> {
     return await this.albumService.findOne(id);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -43,7 +44,7 @@ export class AlbumController {
     return await this.albumService.create(createAlbumDto);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -54,7 +55,7 @@ export class AlbumController {
     return await this.albumService.update(id, updateAlbumDto);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
