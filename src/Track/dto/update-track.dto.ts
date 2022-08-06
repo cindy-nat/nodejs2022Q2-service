@@ -7,11 +7,11 @@ export class UpdateTrackDto {
 
   @IsOptional()
   @IsString()
-  artistId: string; // refers to Artist
+  artistId: string | null; // refers to Artist
 
   @IsOptional()
   @IsString()
-  albumId: string; // refers to Album
+  albumId: string | null; // refers to Album
 
   @IsOptional()
   @IsInt()

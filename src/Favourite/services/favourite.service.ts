@@ -1,71 +1,81 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { FavouriteSchema } from '../schemas/favourite.schema';
-import { data } from '../../data';
-import { TrackSchema } from '../../Track';
 import { validate } from 'uuid';
-import { AlbumSchema } from '../../Album';
 import { Artist } from '../../Artist';
 import { DeleteType } from '../../general.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ArtistEntity } from '../../Artist/entity/artist.entity';
+import { Repository } from 'typeorm';
+import { FavouriteEntity } from '../entity/favourite.entity';
+import { AlbumEntity } from '../../Album/entity/album.entity';
+import { TrackEntity } from '../../Track/entity/track.entity';
+import { AppDataSource } from '../../../data-source';
 
 @Injectable()
 export class FavouriteService {
-  async findAll(): Promise<FavouriteSchema> {
-    const result = {
-      artists: [],
-      albums: [],
-      tracks: [],
-    };
-
-    data.favourites.artists.forEach((favArtist) => {
-      result.artists.push(
-        data.artists.find((artist) => artist.id === favArtist),
-      );
-    });
-
-    data.favourites.albums.forEach((favAlbum) => {
-      result.albums.push(data.albums.find((album) => album.id === favAlbum));
-    });
-
-    data.favourites.tracks.forEach((favTrack) => {
-      result.tracks.push(data.tracks.find((track) => track.id === favTrack));
-    });
-
-    return result;
+  private trackRepository: Repository<TrackEntity>;
+  private albumRepository: Repository<AlbumEntity>;
+  private artistRepository: Repository<ArtistEntity>;
+  constructor(
+    @InjectRepository(FavouriteEntity)
+    private favouriteRepository: Repository<FavouriteEntity>,
+  ) {
+    this.trackRepository = AppDataSource.getRepository('track_entity');
+    this.albumRepository = AppDataSource.getRepository('album_entity');
+    this.artistRepository = AppDataSource.getRepository('artist_entity');
   }
 
-  async addTrackToFav(id: string): Promise<TrackSchema> {
+  async findAll(): Promise<FavouriteEntity> {
+    const data = await this.favouriteRepository.find({
+      relations: { artists: true, tracks: true, albums: true },
+    });
+
+    return data.length === 0
+      ? await this.favouriteRepository.save({
+          albums: [],
+          artists: [],
+          tracks: [],
+        })
+      : data[0];
+  }
+
+  async addTrackToFav(id: string): Promise<TrackEntity> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
 
-    const track = data.tracks.find((track) => track.id === id);
-
+    const track = await this.trackRepository.findOneBy({ id: id });
     if (!track) {
       throw new UnprocessableEntityException();
     }
+    const data = await this.favouriteRepository.find();
 
-    data.favourites.tracks.push(id);
+    data[0].tracks.push(track);
+
+    await this.favouriteRepository.save(data);
 
     return track;
   }
 
-  async addAlbumToFav(id: string): Promise<AlbumSchema> {
+  async addAlbumToFav(id: string): Promise<AlbumEntity> {
     if (!validate(id)) {
       throw new BadRequestException();
     }
 
-    const album = data.albums.find((album) => album.id === id);
+    const album = await this.albumRepository.findOneBy({ id: id });
 
     if (!album) {
       throw new UnprocessableEntityException();
     }
 
-    data.favourites.albums.push(id);
+    const data = await this.favouriteRepository.find();
+
+    data[0].albums.push(album);
+
+    await this.favouriteRepository.save(data);
 
     return album;
   }
@@ -75,13 +85,17 @@ export class FavouriteService {
       throw new BadRequestException();
     }
 
-    const artist = data.artists.find((artist) => artist.id === id);
+    const artist = await this.artistRepository.findOneBy({ id: id });
 
     if (!artist) {
       throw new UnprocessableEntityException();
     }
 
-    data.favourites.artists.push(id);
+    const data = await this.favouriteRepository.find();
+
+    data[0].artists.push(artist);
+
+    await this.favouriteRepository.save(data);
 
     return artist;
   }
@@ -91,15 +105,11 @@ export class FavouriteService {
       throw new BadRequestException();
     }
 
-    const favTrack = data.favourites.tracks.find((trackId) => trackId === id);
+    const data = await this.favouriteRepository.find();
 
-    if (!favTrack) {
-      throw new NotFoundException();
-    }
+    data[0].tracks = data[0].tracks.filter((track) => track.id !== id);
 
-    data.favourites.tracks = data.favourites.tracks.filter(
-      (trackId) => trackId !== id,
-    );
+    await this.favouriteRepository.save(data[0]);
 
     return { deleted: true };
   }
@@ -109,15 +119,11 @@ export class FavouriteService {
       throw new BadRequestException();
     }
 
-    const favAlbum = data.favourites.albums.find((albumId) => albumId === id);
+    const data = await this.favouriteRepository.find();
 
-    if (!favAlbum) {
-      throw new NotFoundException();
-    }
+    data[0].albums = data[0].albums.filter((album) => album.id !== id);
 
-    data.favourites.albums = data.favourites.albums.filter(
-      (albumId) => albumId !== id,
-    );
+    await this.favouriteRepository.save(data[0]);
 
     return { deleted: true };
   }
@@ -127,17 +133,11 @@ export class FavouriteService {
       throw new BadRequestException();
     }
 
-    const favArtist = data.favourites.artists.find(
-      (artistId) => artistId === id,
-    );
+    const data = await this.favouriteRepository.find();
 
-    if (!favArtist) {
-      throw new NotFoundException();
-    }
+    data[0].artists = data[0].artists.filter((art) => art.id !== id);
 
-    data.favourites.artists = data.favourites.artists.filter(
-      (artistId) => artistId !== id,
-    );
+    await this.favouriteRepository.save(data[0]);
 
     return { deleted: true };
   }

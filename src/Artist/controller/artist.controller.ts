@@ -8,17 +8,20 @@ import {
   Post,
   Put,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ArtistService } from '../services/artist.service';
 import { Artist } from '../schemas/artist.schema';
 import { CreateArtistDto } from '../dto/create-artist.dto';
 import { UpdateArtistDto } from '../dto/update-artist.dto';
 import { DeleteType } from '../../general.schema';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('artist')
 export class ArtistController {
   constructor(private readonly artistService: ArtistService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -26,12 +29,14 @@ export class ArtistController {
     return this.artistService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   @Header('Content-type', 'application/json')
   async findOne(@Param('id') id: string): Promise<Artist> {
     return await this.artistService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -39,6 +44,7 @@ export class ArtistController {
     return await this.artistService.create(createArtistDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   @HttpCode(200)
   @Header('Content-type', 'application/json')
@@ -49,6 +55,7 @@ export class ArtistController {
     return await this.artistService.update(id, updateArtistDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
