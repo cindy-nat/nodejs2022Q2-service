@@ -5,13 +5,17 @@ import { ValidationPipe } from '@nestjs/common';
 import 'reflect-metadata';
 import { MyLogger } from './logger/logger.service';
 import { HttpExceptionFilter } from './http-exception.filter';
+import getLogLevels from './getLogLevels';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4001;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    logger: getLogLevels(process.env.NODE_ENV === 'production'),
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.useLogger(app.get(MyLogger));
   app.useGlobalFilters(new HttpExceptionFilter());
