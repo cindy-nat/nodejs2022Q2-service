@@ -6,25 +6,29 @@ import {
   HttpCode,
   Param,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { FavouriteService } from '../services/favourite.service';
-import { FavouriteSchema } from '../schemas/favourite.schema';
 import { TrackSchema } from '../../Track';
 import { DeleteType } from '../../general.schema';
 import { AlbumSchema } from '../../Album';
 import { Artist } from '../../Artist';
+import { FavouriteEntity } from '../entity/favourite.entity';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('favs')
 export class FavouriteController {
   constructor(private readonly favouriteService: FavouriteService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(200)
   @Header('Content-type', 'application/json')
-  async findAll(): Promise<FavouriteSchema> {
+  async findAll(): Promise<FavouriteEntity> {
     return this.favouriteService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('track/:id')
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -32,6 +36,7 @@ export class FavouriteController {
     return this.favouriteService.addTrackToFav(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('album/:id')
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -39,6 +44,7 @@ export class FavouriteController {
     return this.favouriteService.addAlbumToFav(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('artist/:id')
   @HttpCode(201)
   @Header('Content-type', 'application/json')
@@ -46,6 +52,7 @@ export class FavouriteController {
     return this.favouriteService.addArtistToFav(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('track/:id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
@@ -53,6 +60,7 @@ export class FavouriteController {
     return this.favouriteService.deleteTrackFromFav(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('album/:id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
@@ -60,6 +68,7 @@ export class FavouriteController {
     return this.favouriteService.deleteAlbumFromFav(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('artist/:id')
   @HttpCode(204)
   @Header('Content-type', 'application/json')
